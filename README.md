@@ -16,15 +16,15 @@ VPS環境（Ubuntu）での動作・GitHubクローン・環境構成が前提�
 
 ```
 
-ai\_omokage/
-├── app.py                     # エントリーポイント
-├── config.py                  # 設定ファイル（OpenAIキーなど）
-├── .env                       # 環境変数ファイル
-├── requirements.txt           # 必要ライブラリ一覧
+ai_omokage/
+├── app.py                  # エントリーポイント
+├── config.py               # 設定ファイル（OpenAIキーなど）
+├── .env                    # 環境変数ファイル
+├── requirements.txt        # 必要ライブラリ一覧
 └── logic/
-  ├── **init**.py
-  ├── chatgpt\_logic.py       # ChatGPT応答処理
-  └── db\_utils.py            # SQLiteデータベース操作
+    ├── __init__.py
+    ├── chatgpt_logic.py    # ChatGPT応答処理
+    └── db_utils.py         # SQLiteデータベース操作
 
 ````
 
