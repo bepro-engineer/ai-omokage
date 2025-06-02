@@ -76,5 +76,6 @@ python app.py
 * OpenAIのAPIコストが発生します。使用量には十分注意してください。
 
 ## 📝 ライセンス
+```plaintext
 MIT License
 ```
