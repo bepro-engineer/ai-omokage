@@ -13,7 +13,6 @@ VPS環境（Ubuntu）での動作・GitHubクローン・環境構成が前提�
 面影AIは、ChatGPTを利用して「過去の自分」の発言や記録をもとに、現在の自分へ応答する自己対話AIです。Phase構成を用いて、記憶の蓄積・再生を段階的に実装しています。
 
 ## 🧩 構成ファイル
-
 ```
 ai_omokage/
 ├── app.py               # エントリーポイント
@@ -24,7 +23,7 @@ ai_omokage/
     ├── __init__.py
     ├── chatgpt_logic.py # ChatGPT応答処理
     └── db_utils.py      # SQLiteデータベース操作
-````
+```
 
 ## 🚀 セットアップ手順（Ubuntu）
 1. GitHubからクローン  
