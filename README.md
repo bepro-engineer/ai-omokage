@@ -1,4 +1,4 @@
-以下は、面影AI（`ai-omokage`）プロジェクト用の `README.md` のサンプルです。
+以下は、面影AI（`ai-omokage`）プロジェクト用の `README.md` のサンプルです。<br>
 VPS環境（Ubuntu）での動作・GitHubクローン・環境構成が前提の構成になっています。
 
 ---
@@ -71,4 +71,3 @@ python app.py
 ## 📝 ライセンス
 MIT License
 ```
-
