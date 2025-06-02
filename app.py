@@ -1,0 +1,136 @@
+from flask import Flask, request, abort
+from linebot.v3.messaging import Configuration, ApiClient, MessagingApi
+from linebot.v3.webhook import WebhookHandler
+from linebot.v3.webhooks import MessageEvent, TextMessageContent
+from linebot.v3.messaging.models import ReplyMessageRequest, TextMessage
+
+from dotenv import load_dotenv
+import os
+import json
+
+from logic.db_utils import initDatabase, registerMemoryAndDialogue
+from logic.chatgpt_logic import getChatGptReply, getCategoryByGpt
+import logging
+logging.getLogger('werkzeug').setLevel(logging.ERROR)
+
+# 環境変数の読み込み
+load_dotenv()
+
+# 各種設定値を取得
+channel_secret = os.getenv("LINE_CHANNEL_SECRET")
+access_token = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
+openai_api_key = os.getenv("OPENAI_API_KEY")
+memory_target_user_id = os.getenv("MEMORY_TARGET_USER_ID")
+phase_mode = os.getenv("PHASE_MODE")  # learn または reply
+
+# 致命的な設定ミスの検出
+if not memory_target_user_id:
+    raise ValueError("MEMORY_TARGET_USER_ID is not set. Startup aborted.")
+if phase_mode not in ["learn", "reply"]:
+    raise ValueError("PHASE_MODE must be 'learn' or 'reply'. Startup aborted.")
+
+# FlaskとLINE初期化
+app = Flask(__name__)
+handler = WebhookHandler(channel_secret)
+messaging_api = MessagingApi(ApiClient(Configuration(access_token=access_token)))
+
+# DB初期化
+initDatabase()
+
+@app.route("/callback", methods=["POST"])
+def callback():
+    signature = request.headers["X-Line-Signature"]
+    body_text = request.get_data(as_text=True)
+    body_json = request.get_json(force=True)
+
+    events = body_json.get("events", [])
+    if not events:
+        print("⚠️ Warning: No events in body.")
+        return "NO EVENT", 200
+
+    user_id = events[0]["source"]["userId"]
+    print("user_id:", user_id)
+
+    try:
+        handler.handle(body_text, signature)
+    except Exception as e:
+        print(f"[{phase_mode.upper()}] Webhook Error: {e}")
+        abort(400)
+
+    return "OK"
+
+@handler.add(MessageEvent, message=TextMessageContent)
+def handleMessage(event):
+    try:
+        user_id = event.source.user_id
+        message = event.message.text
+
+        NG_WORDS = ["セフレ", "エロ", "性欲", "キスして", "付き合って", "いやらしい"]
+        if any(ng in message.lower() for ng in NG_WORDS):
+            reply_text = "この話題には応答できません。"
+            reply = ReplyMessageRequest(
+                reply_token=event.reply_token,
+                messages=[TextMessage(text=reply_text)]
+            )
+            messaging_api.reply_message(reply)
+            return
+
+        print(f"[{phase_mode.upper()}] Received message from user_id: {user_id}")
+        print(f"[{phase_mode.upper()}] MEMORY_TARGET_USER_ID: {memory_target_user_id}")
+
+        if phase_mode == "learn":
+            if user_id == memory_target_user_id:
+                # ✅ カテゴリをChatGPTに判定させて登録
+                category = getCategoryByGpt(message)
+                registerMemoryAndDialogue(
+                    user_id=user_id,
+                    message=message,
+                    content=message,
+                    category=category,
+                    memory_refs=None,
+                    is_ai_generated=False,
+                    sender_user_id="self",
+                    message_type="input"
+                )
+                print(f"Memory recorded with category: {category}")
+            else:
+                print("Ignored: Not memory target (LEARN mode)")
+
+        elif phase_mode == "reply":
+#            if user_id == memory_target_user_id:
+#                print("Ignored: memory_target_user_id should not speak in REPLY mode")
+#                return
+
+            gpt_result = getChatGptReply(message, memory_target_user_id)
+            reply_text = gpt_result["reply_text"]
+            memory_refs = json.dumps(gpt_result["used_memory_ids"])
+            used_category = gpt_result["used_category"]
+
+            registerMemoryAndDialogue(
+                user_id=memory_target_user_id,
+                message=message,
+                content=reply_text,
+                category=used_category,
+                memory_refs=memory_refs,
+                is_ai_generated=True,
+                sender_user_id=user_id,
+                message_type="reply"
+            )
+
+            reply = ReplyMessageRequest(
+                reply_token=event.reply_token,
+                messages=[TextMessage(text=reply_text)]
+            )
+            messaging_api.reply_message(reply)
+            print(f"Reply sent and recorded (REPLY mode) with category: {used_category}")
+
+
+    except Exception as e:
+        print(f"[{phase_mode.upper()}] Handler Error: {e}")
+
+if __name__ == '__main__':
+    print("✅ initDatabase() を実行開始")
+    initDatabase()
+    print("✅ initDatabase() を完了")
+    app.run(debug=False, host='0.0.0.0', port=5000)
+
