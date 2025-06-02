@@ -7,7 +7,7 @@ VPS環境（Ubuntu）での動作・GitHubクローン・環境構成が前提�
 以下は、実際に面影AIを実行したときの画面例です。
 
 <div align="center">
-  <img src="https://github.com/bepro-engineer/ai-omokage/raw/main/images/omokage_screen.png" width="500">
+  <img src="https://github.com/bepro-engineer/ai-omokage/raw/main/images/omokage_screen.png" width="300">
 </div>
 
 ```plaintext
