@@ -2,6 +2,13 @@
 VPS環境（Ubuntu）での動作・GitHubクローン・環境構成が前提の構成になっています。
 
 ---
+## 💻 面影AIの動作画面
+
+以下は、実際に面影AIを実行したときの画面例です。
+
+<div align="center">
+  <img src="https://github.com/bepro-engineer/ai-omokage/raw/main/images/omokage_screen.png" width="500">
+</div>
 
 ```plaintext
 # 面影AI（Omokage AI）
