@@ -16,7 +16,6 @@ VPS環境（Ubuntu）での動作・GitHubクローン・環境構成が前提�
 
 ```
 <pre> ``` ai_omokage/ ├── app.py # エントリーポイント ├── config.py # 設定ファイル（OpenAIキーなど） ├── .env # 環境変数ファイル ├── requirements.txt # 必要ライブラリ一覧 └── logic/ ├── __init__.py ├── chatgpt_logic.py # ChatGPT応答処理 └── db_utils.py # SQLiteデータベース操作 ``` </pre>
-
 ````
 
 ## 🚀 セットアップ手順（Ubuntu）
