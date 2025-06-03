@@ -2,8 +2,8 @@ VPS環境（Ubuntu）での動作・GitHubクローン・環境構成が前提�
 
 📚 詳細な解説はこちら<br><br>
 本プロジェクトの詳しい背景や仕組み、導入手順については、以下のブログ記事で解説しています。<br>
-👉 面影AIシステム｜自分のスケジュールを自動で管理する仕組みを公開中<br>
-詳しい説明は[こちらのブログ記事 (Beエンジニア) ](https://www.pmi-sfbac.org/category/freelance-automation/product/ai-omokage-system/)をご覧ください。
+👉 面影AI｜いつか消える面影を、繋ぐ未来をAIに託す挑戦<br>
+詳しい説明は<a href="https://www.pmi-sfbac.org/category/freelance-automation/product/ai-omokage/" target="_blank">こちらのブログ記事 (Beエンジニア)</a>をご覧ください。
 
 ---
 ## 💻 面影AIの動作画面
