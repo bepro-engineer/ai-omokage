@@ -9,8 +9,8 @@ load_dotenv()
 # OpenAIクライアント初期化
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# ✅ 指定カテゴリの記憶を取得（忘却されていないもの）
-def getMemoriesByCategory(category, target_user_id, limit=10):
+# ✅ 指定カテゴリの記憶を取得（ユーザーごと）
+def getMemoriesByCategory(category, user_id, limit=10):
     conn = sqlite3.connect("memory.db")
     c = conn.cursor()
     c.execute("""
@@ -18,10 +18,10 @@ def getMemoriesByCategory(category, target_user_id, limit=10):
         FROM memories
         WHERE is_forgotten = 0
           AND category = ?
-          AND target_user_id = ?
+          AND user_id = ?
         ORDER BY created_at DESC
         LIMIT ?
-    """, (category, target_user_id, limit))
+    """, (category, user_id, limit))
     results = c.fetchall()
     conn.close()
     return results
@@ -56,22 +56,20 @@ def buildPrompt(memories, user_message, role_label, category):
 """
     return prompt.strip()
 
-# ✅ ChatGPTで自然な応答を得る（カテゴリごとに記憶を絞る）
-def getChatGptReply(user_message, target_user_id):
+# ✅ ChatGPTで自然な応答を得る（発言者ごとの記憶から）
+def getChatGptReply(user_message, user_id):
     # ① カテゴリ判定
     category = getCategoryByGpt(user_message)
     print(f"🔍 判定カテゴリ: {category}")
 
     # ② 指定カテゴリ × ユーザーIDの記憶を取得
-    MEMORY_TARGET_USER_ID = os.getenv("MEMORY_TARGET_USER_ID")
-    memory_items = getMemoriesByCategory(category, MEMORY_TARGET_USER_ID)
+    memory_items = getMemoriesByCategory(category, user_id)
     memory_ids = [m[0] for m in memory_items]
     memory_texts = [m[1] for m in memory_items]
 
     # ③ プロンプト生成
     role_label = os.getenv("TARGET_ROLE")
     prompt = buildPrompt(memory_texts, user_message, role_label, category)
-
 
     # ④ ChatGPT API呼び出し
     response = client.chat.completions.create(

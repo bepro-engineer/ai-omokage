@@ -3,8 +3,7 @@ from flask import Flask, request, abort
 from linebot.v3.messaging import Configuration, ApiClient, MessagingApi
 from linebot.v3.webhook import WebhookHandler
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
-from linebot.v3.messaging.models import ReplyMessageRequest, TextMessage
-
+from linebot.v3.messaging.models import ReplyMessageRequest, PushMessageRequest, TextMessage
 from dotenv import load_dotenv
 import os
 import json
@@ -21,12 +20,12 @@ load_dotenv()
 channel_secret = os.getenv("LINE_CHANNEL_SECRET")
 access_token = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 openai_api_key = os.getenv("OPENAI_API_KEY")
-memory_target_user_id = os.getenv("MEMORY_TARGET_USER_ID")
+# memory_target_user_id = os.getenv("MEMORY_TARGET_USER_ID")
 phase_mode = os.getenv("PHASE_MODE")  # "learn" または "reply" を指定
+self_user_id    = os.getenv("LINE_USER_ID_SELF") 
+target_user_id = os.getenv("LINE_USER_ID_TARGET") 
 
 # 設定ミスがある場合は即時停止
-if not memory_target_user_id:
-    raise ValueError("MEMORY_TARGET_USER_ID is not set. Startup aborted.")
 if phase_mode not in ["learn", "reply"]:
     raise ValueError("PHASE_MODE must be 'learn' or 'reply'. Startup aborted.")
 
@@ -64,69 +63,124 @@ def ai_omokage_webhook():
 # メッセージ受信イベントに応答
 @handler.add(MessageEvent, message=TextMessageContent)
 def handleMessage(event):
-    try:
-        user_id = event.source.user_id
-        message = event.message.text
 
-        # 禁止ワードにヒットした場合は即応答
+    try:
+        user_id  = event.source.user_id          # 発言者の LINE userId
+        message  = event.message.text            # 発言テキスト
+
+        # ─────────────────────────────
+        # 0. 禁止ワードチェック（NGワードが含まれていたら即遮断）
+        # ─────────────────────────────
         NG_WORDS = ["セフレ", "エロ", "性欲", "キスして", "付き合って", "いやらしい"]
         if any(ng in message.lower() for ng in NG_WORDS):
-            reply_text = "この話題には応答できません。"
-            reply = ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[TextMessage(text=reply_text)]
+            ban_reply = "この話題には応答できません。"
+            messaging_api.reply_message(
+                ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text=ban_reply)]
+                )
             )
-            messaging_api.reply_message(reply)
             return
 
-        print(f"[{phase_mode.upper()}] Received message from user_id: {user_id}")
-        print(f"[{phase_mode.upper()}] MEMORY_TARGET_USER_ID: {memory_target_user_id}")
+        print(f"🌐 DEBUG: phase_mode is {phase_mode}")
+        # =====================================================
+        # Phase-1 : 学習モード（Bepro ↔ Geeksのやりとりを記録）
+        # =====================================================
+        if phase_mode.strip() == "learn":
+            print("🔁 Phase1 入った")
+            # カテゴリ分類のみ（AIはここでのみ使う）
+            category = getCategoryByGpt(message)
 
-        # Phaseモードに応じて処理を分岐
-        if phase_mode == "learn":
-            # 対象ユーザーの発言のみを記録
-            if user_id == memory_target_user_id:
-                category = getCategoryByGpt(message)
-                registerMemoryAndDialogue(
-                    user_id=user_id,
-                    message=message,
-                    content=message,
-                    category=category,
-                    memory_refs=None,
-                    is_ai_generated=False,
-                    sender_user_id="self",
-                    message_type="input"
+            # ① input（親）を保存：発言者＝記憶対象
+            parent_id = registerMemoryAndDialogue(
+                user_id         = user_id,
+                message         = message,
+                content         = message,              # 応答ではなく、発言内容そのまま
+                category        = category,
+                sender_user_id  = user_id,
+                message_type    = "input"
+            )
+
+            # ② 表示処理（Phase1：AIは一切返答せず、人間の発言のみ転送）
+            if user_id == self_user_id:
+                # Beproの発話をGeeksへ転送（自分にもecho）
+                messaging_api.push_message(
+                    PushMessageRequest(
+                        to=target_user_id,
+                        messages=[TextMessage(text=message)]
+                    )
                 )
-                print(f"Memory recorded with category: {category}")
+
+            elif user_id == target_user_id:
+                # Geeksの発話をBeproへ転送
+                messaging_api.push_message(
+                    PushMessageRequest(
+                        to=self_user_id,
+                        messages=[TextMessage(text=message)]
+                    )
+                )
+
             else:
-                print("Ignored: Not memory target (LEARN mode)")
+                # 想定外ユーザーは無視
+                print("Ignored: unknown user in Phase1.")
+                return
+            print("✅ Phase1 完了：return直前")
+            return  # Phase1終了
 
-        elif phase_mode == "reply":
-            # 対話応答を生成し、記録＋返答
-            gpt_result = getChatGptReply(message, memory_target_user_id)
-            reply_text = gpt_result["reply_text"]
-            memory_refs = json.dumps(gpt_result["used_memory_ids"])
-            used_category = gpt_result["used_category"]
+        # =====================================================
+        # Phase-2 : 過去母発言を模倣した応答（未使用）
+        # =====================================================
+        elif phase_mode.strip() == "reply":
+            print("🔁 Phase2 入った")
+            category = getCategoryByGpt(message)
 
+            # ① input（親）を保存
+            parent_id = registerMemoryAndDialogue(
+                user_id         = user_id,
+                message         = message,
+                content         = message,
+                category        = category,
+                sender_user_id  = user_id,
+                message_type    = "input"
+            )
+
+            # ② ChatGPT による応答生成（過去の記憶から返答）
+            gpt_result   = getChatGptReply(message, user_id)
+            reply_text   = gpt_result["reply_text"]
+            memory_refs  = json.dumps(gpt_result["used_memory_ids"])
+
+            # ③ reply（子）を保存
+            reply_sender_id = target_user_id if user_id == self_user_id else self_user_id
             registerMemoryAndDialogue(
-                user_id=memory_target_user_id,
-                message=message,
-                content=reply_text,
-                category=used_category,
-                memory_refs=memory_refs,
-                is_ai_generated=True,
-                sender_user_id=user_id,
-                message_type="reply"
+                user_id             = user_id,
+                message             = message,
+                content             = reply_text,
+                category            = category,
+                memory_refs         = memory_refs,
+                is_ai_generated     = True,
+                sender_user_id      = reply_sender_id,
+                message_type        = "reply",
+                parent_dialogue_id  = parent_id
             )
 
-            reply = ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[TextMessage(text=reply_text)]
+            # ④ 相手へPush送信
+            to_user_id = reply_sender_id
+            messaging_api.push_message(
+                PushMessageRequest(
+                    to=to_user_id,
+                    messages=[TextMessage(text=reply_text)]
+                )
             )
-            messaging_api.reply_message(reply)
-            print(f"Reply sent and recorded (REPLY mode) with category: {used_category}")
+            print("💥 getChatGptReply が呼び出された")
+            return  # Phase2終了
+
+        # =====================================================
+        # モード不一致または対象外ユーザーなど
+        # =====================================================
+        print("Ignored : not target or phase mismatch.")
 
     except Exception as e:
+        # 例外発生時はログに出力（応答は返さない）
         print(f"[{phase_mode.upper()}] Handler Error: {e}")
 
 # ローカル実行用のエントリーポイント
