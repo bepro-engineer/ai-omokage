@@ -69,7 +69,7 @@ def initDatabase():
         print("✅ すでに初期化済みです。テーブルは存在しています。")
 
     conn.close()
-
+    
 # ✅ 記憶と発話ログを 1 トランザクションで保存
 def registerMemoryAndDialogue(
     user_id: str,
@@ -101,7 +101,30 @@ def registerMemoryAndDialogue(
         )
         memory_id = c.lastrowid
 
-        # ✅ dialogues へ INSERT（sender / target を明記）
+        # 親メッセージ（input）の挿入
+        if message_type == "input" and parent_dialogue_id is None:
+            c.execute(
+                """
+                INSERT INTO dialogues (
+                    target_user_id, sender_user_id, message_type,
+                    is_ai_generated, text, memory_refs,
+                    category, parent_dialogue_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    sender_user_id if sender_user_id != user_id else user_id,  # target = 相手側
+                    sender_user_id,
+                    message_type,
+                    int(is_ai_generated),
+                    message,
+                    json.dumps(memory_refs) if memory_refs else None,
+                    category,
+                    None  # 親メッセージにはparent_dialogue_idはNone
+                )
+            )
+            parent_dialogue_id = c.lastrowid  # 親メッセージのIDを取得
+
+        # 子メッセージ（reply）の挿入時に親メッセージのdialogue_idをparent_dialogue_idに設定
         c.execute(
             """
             INSERT INTO dialogues (
@@ -118,7 +141,7 @@ def registerMemoryAndDialogue(
                 message,
                 json.dumps(memory_refs) if memory_refs else None,
                 category,
-                parent_dialogue_id
+                parent_dialogue_id  # 親メッセージのIDをセット
             )
         )
         dialogue_id = c.lastrowid
@@ -134,6 +157,7 @@ def registerMemoryAndDialogue(
         return dialogue_id
     except Exception as e:
         conn.rollback()
+        print(f"Error: {e}")
         raise e
     finally:
         conn.close()
