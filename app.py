@@ -145,14 +145,14 @@ def handleMessage(event):
             )
 
             # ② ChatGPT による応答生成（過去の記憶から返答）
-            gpt_result   = getChatGptReply(message, user_id)
+            gpt_result   = getChatGptReply(message, target_user_id, category)
             reply_text   = gpt_result["reply_text"]
             memory_refs  = json.dumps(gpt_result["used_memory_ids"])
 
             # ③ reply（子）を保存
             reply_sender_id = target_user_id if user_id == self_user_id else self_user_id
             registerMemoryAndDialogue(
-                user_id             = user_id,
+                user_id             = target_user_id,
                 message             = message,
                 content             = reply_text,
                 category            = category,

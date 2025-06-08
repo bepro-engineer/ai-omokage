@@ -57,9 +57,9 @@ def buildPrompt(memories, user_message, role_label, category):
     return prompt.strip()
 
 # ✅ ChatGPTで自然な応答を得る（発言者ごとの記憶から）
-def getChatGptReply(user_message, user_id):
+def getChatGptReply(user_message, user_id, category):
     # ① カテゴリ判定
-    category = getCategoryByGpt(user_message)
+#   category = getCategoryByGpt(user_message)
     print(f"🔍 判定カテゴリ: {category}")
 
     # ② 指定カテゴリ × ユーザーIDの記憶を取得
