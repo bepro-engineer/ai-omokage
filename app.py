@@ -20,8 +20,7 @@ load_dotenv()
 channel_secret = os.getenv("LINE_CHANNEL_SECRET")
 access_token = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 openai_api_key = os.getenv("OPENAI_API_KEY")
-# memory_target_user_id = os.getenv("MEMORY_TARGET_USER_ID")
-phase_mode = os.getenv("PHASE_MODE")  # "learn" または "reply" を指定
+phase_mode = os.getenv("PHASE_MODE") 
 self_user_id    = os.getenv("LINE_USER_ID_SELF") 
 target_user_id = os.getenv("LINE_USER_ID_TARGET") 
 
@@ -150,7 +149,6 @@ def handleMessage(event):
             memory_refs  = json.dumps(gpt_result["used_memory_ids"])
 
             # ③ reply（子）を保存
-            reply_sender_id = target_user_id if user_id == self_user_id else self_user_id
             registerMemoryAndDialogue(
                 user_id             = target_user_id,
                 message             = message,
@@ -158,13 +156,13 @@ def handleMessage(event):
                 category            = category,
                 memory_refs         = memory_refs,
                 is_ai_generated     = True,
-                sender_user_id      = reply_sender_id,
+                sender_user_id      = target_user_id,
                 message_type        = "reply",
                 parent_dialogue_id  = parent_id
             )
 
             # ④ 相手へPush送信
-            to_user_id = reply_sender_id
+            to_user_id = self_user_id
             messaging_api.push_message(
                 PushMessageRequest(
                     to=to_user_id,
@@ -188,4 +186,5 @@ if __name__ == '__main__':
     print("✅ initDatabase() を実行開始")
     initDatabase()
     print("✅ initDatabase() を完了")
+    print(f"🌐 DEBUG: phase_mode is {phase_mode}")
     app.run(debug=False, host='0.0.0.0', port=5001)

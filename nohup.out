@@ -1,0 +1,29 @@
+✅ すでに初期化済みです。テーブルは存在しています。
+✅ initDatabase() を実行開始
+✅ すでに初期化済みです。テーブルは存在しています。
+✅ initDatabase() を完了
+🌐 DEBUG: phase_mode is learn
+ * Serving Flask app 'app'
+ * Debug mode: off
+✅ すでに初期化済みです。テーブルは存在しています。
+✅ initDatabase() を実行開始
+✅ すでに初期化済みです。テーブルは存在しています。
+✅ initDatabase() を完了
+🌐 DEBUG: phase_mode is learn
+ * Serving Flask app 'app'
+ * Debug mode: off
+✅ memories テーブルが存在しないので、初期化を開始します。
+✅ 初期化が完了しました。
+✅ initDatabase() を実行開始
+✅ すでに初期化済みです。テーブルは存在しています。
+✅ initDatabase() を完了
+🌐 DEBUG: phase_mode is learn
+ * Serving Flask app 'app'
+ * Debug mode: off
+✅ すでに初期化済みです。テーブルは存在しています。
+✅ initDatabase() を実行開始
+✅ すでに初期化済みです。テーブルは存在しています。
+✅ initDatabase() を完了
+🌐 DEBUG: phase_mode is reply
+ * Serving Flask app 'app'
+ * Debug mode: off
