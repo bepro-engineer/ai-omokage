@@ -11,6 +11,7 @@ VPS環境（Ubuntu）での動作・GitHubクローン・環境構成が前提�
 以下は、実際に面影AIを実行したときの画面例です。<br>
 - 面影AIでは、ユーザーが特定の人物をターゲットとして記憶データを蓄積していきます。<br>
 - 今回のサンプルでは、「母」を対象とした設定で動作させています。
+右イメージ：学習モード　左イメージ：応答モード
 
 <div align="center">
   <img src="https://github.com/bepro-engineer/ai-omokage/raw/main/images/omokage_screen.png" width="600">
