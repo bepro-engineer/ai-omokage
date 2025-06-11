@@ -6,7 +6,7 @@
 <img src="https://raw.githubusercontent.com/bepro-engineer/ai-omokage/main/images/omokage_screen_top.png" width="700">
 </div>
 
-# 🧠 面影AI（おもかげ）– 過去の会話で、人を模倣するAI
+## 🧠 面影AI（おもかげ）– 過去の会話で、人を模倣するAI
 
 「“あの人らしい返し”をしてくれるのは、AIじゃなくて、会話の記憶だ。」
 
