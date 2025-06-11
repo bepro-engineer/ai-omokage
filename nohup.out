@@ -27,3 +27,20 @@
 🌐 DEBUG: phase_mode is reply
  * Serving Flask app 'app'
  * Debug mode: off
+80.82.77.202 - - [10/Jun/2025 15:35:20] code 400, message Bad request syntax ('\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03ØIÎá\x13_\x16Çk\x9eâ\x90Ý')
+80.82.77.202 - - [10/Jun/2025 15:35:21] code 400, message Bad request version ('À\x13À')
+199.45.155.73 - - [10/Jun/2025 20:16:18] code 400, message Bad request version ('À\x14À')
+199.45.155.73 - - [10/Jun/2025 20:16:25] code 505, message Invalid HTTP version (2.0)
+199.45.155.73 - - [10/Jun/2025 20:16:31] code 400, message Bad request version ('À\x14À')
+199.45.155.73 - - [10/Jun/2025 20:16:35] code 400, message Bad request version ('À\x14À')
+199.45.155.73 - - [10/Jun/2025 20:16:36] code 400, message Bad request version ('4\x80+')
+64.62.197.168 - - [11/Jun/2025 00:03:07] code 400, message Bad request version ('À\x14À')
+3.131.215.38 - - [11/Jun/2025 00:53:12] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x00{\x01\x00\x00w\x03\x03Ä¼\x8c\x95E\x13ihi\x82\x06_\x82´Ü\x99è7¬,\x10\x84æ2¬\x8eQ?¦É;A\x00\x00\x1aÀ/À+À\x11À\x07À\x13À')
+3.131.215.38 - - [11/Jun/2025 00:55:14] code 400, message Bad request syntax ('SSH-2.0-Go')
+3.131.215.38 - - [11/Jun/2025 00:56:23] code 400, message Bad request version ('À\x14À')
+86.54.31.38 - - [11/Jun/2025 01:53:15] code 400, message Bad request version ('kºü\x00\x00rÀ0À,À(À$À\x14À')
+104.234.115.10 - - [11/Jun/2025 05:11:48] code 400, message Bad request version ('À\x14À')
+15.235.224.227 - - [11/Jun/2025 11:31:42] code 400, message Bad request version ('À\x14À')
+205.210.31.8 - - [11/Jun/2025 13:43:51] code 400, message Bad request version ('È\x84&\x9a«\x005\x08\x14«\x91e')
+205.210.31.8 - - [11/Jun/2025 13:43:52] code 400, message Bad request version ('À(À$À\x14À')
+64.62.197.170 - - [11/Jun/2025 15:40:15] code 400, message Bad HTTP/0.9 request type ("\x16\x03\x01\x00{\x01\x00\x00w\x03\x03\x12óc\x82õíã\x04ÿ«\x87Ï\xad\xadüïÀõibd»lv).cm\x9d'Ôi\x00\x00\x1aÀ/À+À\x11À\x07À\x13À")
